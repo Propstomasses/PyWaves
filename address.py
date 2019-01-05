@@ -203,8 +203,6 @@ class Address(object):
             raise ValueError('Nonce must be between 0 and 4294967295')
         if seed:
             self._generate(seed=seed, nonce=nonce)
-        elif privateKey:
-            self._generate(privateKey=privateKey)
         elif publicKey:
             self._generate(publicKey=publicKey)
         elif address:
@@ -222,6 +220,12 @@ class Address(object):
             self.privateKey = ''
             self.seed = ''
             self.nonce = 0
+        elif privateKey == '' or privateKey:
+            print('started with private key')
+            if len(privateKey) == 0:
+                raise ValueError('Empty private key not allowed')
+            else:
+                self._generate(privateKey=privateKey)
         else:
             self._generate(nonce=nonce)
         if not pywaves.OFFLINE:
@@ -509,6 +513,10 @@ class Address(object):
             logging.error(msg)
             pywaves.throw_error(msg)
         else:
+            if feeAsset:
+                feeInfos = pywaves.wrapper('/assets/details/' + feeAsset.assetId)
+                if feeInfos['minSponsoredAssetFee']:
+                    txFee = feeInfos['minSponsoredAssetFee']
             if timestamp == 0:
                 timestamp = int(time.time() * 1000)
             sData = b'\4' + \
